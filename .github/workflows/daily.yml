@@ -13,9 +13,9 @@ on:
         options:
           - query
           - claim
-  # 定时默认关闭；确认账号可用后取消下面两行注释
-  # schedule:
-  #   - cron: "15 1 * * *"
+  # 定时已启用：UTC 01:15 = 北京时间 09:15
+  schedule:
+    - cron: "15 1 * * *"
 
 permissions:
   contents: read
@@ -57,8 +57,8 @@ jobs:
           BARK_URL: ${{ secrets.BARK_URL }}
           WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
         run: python doubaowork_daily.py --query
-      - name: Claim once (explicit dispatch only)
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.mode == 'claim' }}
+      - name: Claim once (explicit dispatch or schedule)
+        if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'claim') }}
         env:
           DOUBAOWORK_COOKIES: ${{ secrets.DOUBAOWORK_COOKIES }}
           DOUBAOWORK_COOKIE: ${{ secrets.DOUBAOWORK_COOKIE }}
@@ -72,7 +72,7 @@ jobs:
           WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
         run: python doubaowork_daily.py
       - name: Save Doubao Work check-in ledger
-        if: always() && github.event_name == 'workflow_dispatch' && inputs.mode == 'claim' && hashFiles('doubaowork_state.json') != ''
+        if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.mode == 'claim')) && hashFiles('doubaowork_state.json') != ''
         uses: actions/cache/save@v4
         with:
           path: doubaowork_state.json
