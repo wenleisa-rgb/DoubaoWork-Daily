@@ -16,6 +16,9 @@ on:
   # 定时已启用：UTC 01:15 = 北京时间 09:15
   schedule:
     - cron: "15 1 * * *"
+  # push 触发（用于提交后自动验证运行）
+  push:
+    branches: [main]
 
 permissions:
   contents: read
